@@ -69,6 +69,13 @@ async function run() {
             res.send(result)
         })
 
+        app.delete('/plants/:id', async(req, res)=>{
+            const id = req.params.id;
+            const query = {_id: new ObjectId(id)}
+            const result = await plantCollection.deleteOne(query)
+            res.send(result)
+        })
+
 
 
 
