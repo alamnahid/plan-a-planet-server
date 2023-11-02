@@ -91,16 +91,38 @@ async function run() {
         })
 
         app.get('/plants', async (req, res) => {
-            const cursor = plantCollection.find()
-            const result = await cursor.toArray();
-            res.send(result)
+            const page = parseInt(req.query.page);
+            const size = parseInt(req.query.size);
+      
+            console.log('pagination query', page, size);
+            const result = await plantCollection.find()
+            .skip(page * size)
+            .limit(size)
+            .toArray();
+            res.send(result);
         })
+        // app.get('/plants', async (req, res) => {
+        //     const page = parseInt(req.query.page) || 0;
+        //     const limit = parseInt(req.query.limit) || 5;
+        //     const skip = page * limit;
+
+
+        //     const cursor = plantCollection.find().skip(skip).limit(limit)
+        //     const result = await cursor.toArray();
+        //     res.send(result)
+        // })
 
         app.get('/plants/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: new ObjectId(id) }
             const plants = await plantCollection.findOne(query)
             res.send(plants)
+        })
+
+        // get the total number of product
+        app.get('/plantscount', async(req, res)=>{
+            const count = await plantCollection.estimatedDocumentCount();
+            res.send({count})
         })
 
         app.put('/plants/:id', async (req, res) => {
