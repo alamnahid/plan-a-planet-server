@@ -57,6 +57,7 @@ async function run() {
         const database = client.db("plantDB");
         const plantCollection = database.collection("plants")
         const cartcollection = database.collection("cart")
+        const ordercollection = database.collection("order")
 
         // auth related apis
         app.post('/jwt', logger, async (req, res) => {
@@ -159,6 +160,16 @@ async function run() {
             const id = req.params.id;
             const query = {_id: new ObjectId(id)}
             const result = await cartcollection.deleteOne(query)
+            res.send(result)
+        })
+
+
+        // billing api
+
+        app.post('/order', async (req, res) => {
+            const plant = req.body;
+            console.log(plant)
+            const result = await ordercollection.insertOne(plant);
             res.send(result)
         })
 
