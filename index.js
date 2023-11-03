@@ -58,6 +58,7 @@ async function run() {
         const plantCollection = database.collection("plants")
         const cartcollection = database.collection("cart")
         const ordercollection = database.collection("order")
+        const userCollection = database.collection("user")
 
         // auth related apis
         app.post('/jwt', logger, async (req, res) => {
@@ -192,6 +193,27 @@ async function run() {
             const plant = req.body;
             console.log(plant)
             const result = await ordercollection.insertOne(plant);
+            res.send(result)
+        })
+
+        app.get('/order', logger, async(req, res)=>{
+            const cursor = ordercollection.find();
+            const result = await cursor.toArray();
+            res.send(result)
+        })
+
+        // user
+
+        app.post('/user', async (req, res) => {
+            const cart = req.body;
+            console.log(cart)
+            const result = await userCollection.insertOne(cart);
+            res.send(result)
+        })
+
+        app.get('/user', logger, async(req, res)=>{
+            const cursor = userCollection.find();
+            const result = await cursor.toArray();
             res.send(result)
         })
 
