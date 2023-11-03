@@ -9,7 +9,7 @@ const app = express();
 const port = process.env.PORT || 5000
 //middle ware
 app.use(cors({
-    origin: ['http://localhost:5173', 'http://localhost:5174'],
+    origin: ['https://plan-a-plant.web.app', 'https://plan-a-plant.firebaseapp.com'],
     credentials: true
   }));
 app.use(express.json());
@@ -69,7 +69,6 @@ async function run() {
             res.cookie('token', token, {
                 httpOnly: true,
                 secure: true,
-                sameSite: 'none'
             })
                 .send({ success: true });
         })
