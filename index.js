@@ -15,9 +15,9 @@ const port = process.env.PORT || 5000
 
   app.use(cors({
     origin: [
-        'http://localhost:5173',
-        // 'https://plan-a-plant.web.app',
-        // 'https://plan-a-plant.firebaseapp.com'
+        // 'http://localhost:5173',
+        'https://plan-a-plant.web.app',
+        'https://plan-a-plant.firebaseapp.com'
     ],
     credentials: true
 }));
