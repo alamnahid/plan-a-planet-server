@@ -7,11 +7,20 @@ require('dotenv').config()
 
 const app = express();
 const port = process.env.PORT || 5000
+
+
+
+
 //middle ware
-app.use(cors({
-    origin: ['https://plan-a-plant.web.app', 'https://plan-a-plant.firebaseapp.com'],
+
+  app.use(cors({
+    origin: [
+        'http://localhost:5173',
+        // 'https://plan-a-plant.web.app',
+        // 'https://plan-a-plant.firebaseapp.com'
+    ],
     credentials: true
-  }));
+}));
 app.use(express.json());
 app.use(cookieParser());
 
@@ -69,6 +78,7 @@ async function run() {
             res.cookie('token', token, {
                 httpOnly: true,
                 secure: true,
+                sameSite: 'none'
             })
                 .send({ success: true });
         })
@@ -90,27 +100,48 @@ async function run() {
             res.send(result)
         })
 
+        
+        // app.get('/plants', async (req, res) => {
+        //     const page = parseInt(req.query.page);
+        //     const size = parseInt(req.query.size);
+      
+        //     console.log('pagination query', page, size);
+        //     const result = await plantCollection.find()
+        //     .skip(page * size)
+        //     .limit(size)
+        //     .toArray();
+        //     res.send(result);
+        // })
         app.get('/plants', async (req, res) => {
             const page = parseInt(req.query.page);
             const size = parseInt(req.query.size);
+
+            const filter = req.query;
+            // const query = {
+            //     title: {$regex: filter.search, $options: 'i'}
+            // };
+            // const regex = new RegExp(name, 'i');
+            const query = {
+                name: { $regex: filter.search || '', $options: 'i' },
+                // price: { $gt: 100}
+                // name: {$regex: filter.search, $options: 'i'}
+            }
+            // if (filter.minPrice && filter.maxPrice) {
+            //     query.price = { $gte: parseInt(filter.minPrice), $lte: parseInt(filter.maxPrice) };
+            //   }
+            const options = {
+                sort: {
+                    price: filter.sort === 'asc' ? 1 : -1
+                }
+            };
       
             console.log('pagination query', page, size);
-            const result = await plantCollection.find()
+            const result = await plantCollection.find(query, options)
             .skip(page * size)
             .limit(size)
             .toArray();
             res.send(result);
         })
-        // app.get('/plants', async (req, res) => {
-        //     const page = parseInt(req.query.page) || 0;
-        //     const limit = parseInt(req.query.limit) || 5;
-        //     const skip = page * limit;
-
-
-        //     const cursor = plantCollection.find().skip(skip).limit(limit)
-        //     const result = await cursor.toArray();
-        //     res.send(result)
-        // })
 
         app.get('/plants/:id', async (req, res) => {
             const id = req.params.id;
@@ -161,22 +192,19 @@ async function run() {
             res.send(result)
         })
 
-        app.get('/cart', logger, verifyToken, async(req, res)=>{
+        app.get('/cart', logger, verifyToken, async (req, res) => {
             console.log(req.query.email);
-                 // console.log('ttttt token', req.cookies.token)
-                 console.log('user in the valid token', req.user)
-                 if(req.query.email !== req.user.email){
-                     return res.status(403).send({message: 'forbidden access'})
-                 }
-     
-                 let query = {};
-                 if (req.query?.email) {
-                     query = { email: req.query.email }
-                 }
-           const cursor = cartcollection.find(query);
-           const result = await cursor.toArray();
-           res.send(result)
-         })
+            console.log('token owner info', req.user)
+            if(req.user.email !== req.query.email){
+                return res.status(403).send({message: 'forbidden access'})
+            }
+            let query = {};
+            if (req.query?.email) {
+                query = { email: req.query.email }
+            }
+            const result = await cartcollection.find(query).toArray();
+            res.send(result);
+        })
 
         app.delete('/cart/:id', async(req, res)=>{
             const id = req.params.id;
@@ -195,10 +223,18 @@ async function run() {
             res.send(result)
         })
 
-        app.get('/order', logger, async(req, res)=>{
-            const cursor = ordercollection.find();
-            const result = await cursor.toArray();
-            res.send(result)
+        app.get('/order', logger, verifyToken, async (req, res) => {
+            console.log(req.query.email);
+            console.log('token owner info', req.user)
+            if(req.user.email !== req.query.email){
+                return res.status(403).send({message: 'forbidden access'})
+            }
+            let query = {};
+            if (req.query?.email) {
+                query = { email: req.query.email }
+            }
+            const result = await ordercollection.find(query).toArray();
+            res.send(result);
         })
 
         // user
